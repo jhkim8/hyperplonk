@@ -8,13 +8,13 @@ use ark_ff::PrimeField;
 use std::marker::PhantomData;
 
 mod errors;
-mod perm_check;
+// mod perm_check;
 pub mod prelude;
-mod prod_check;
+// mod prod_check;
 mod structs;
 mod sum_check;
 mod utils;
-mod zero_check;
+// mod zero_check;
 
 #[derive(Clone, Debug, Default, Copy, PartialEq, Eq)]
 /// Struct for PolyIOP protocol.

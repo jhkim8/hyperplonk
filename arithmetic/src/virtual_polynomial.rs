@@ -9,7 +9,7 @@
 
 use crate::{errors::ArithErrors, multilinear_polynomial::random_zero_mle_list, random_mle_list};
 use ark_ff::PrimeField;
-use ark_poly::{DenseMultilinearExtension, MultilinearExtension};
+use ark_poly::{DenseMultilinearExtension, MultilinearExtension, Polynomial};
 use ark_serialize::CanonicalSerialize;
 use ark_std::{
     end_timer,
@@ -218,7 +218,7 @@ impl<F: PrimeField> VirtualPolynomial<F> {
 
     /// Evaluate the virtual polynomial at point `point`.
     /// Returns an error is point.len() does not match `num_variables`.
-    pub fn evaluate(&self, point: &[F]) -> Result<F, ArithErrors> {
+    pub fn evaluate(&self, point: &Vec<F>) -> Result<F, ArithErrors> {
         let start = start_timer!(|| "evaluation");
 
         if self.aux_info.num_variables != point.len() {
@@ -233,9 +233,9 @@ impl<F: PrimeField> VirtualPolynomial<F> {
             .flattened_ml_extensions
             .iter()
             .map(|x| {
-                x.evaluate(point).unwrap() // safe unwrap here since we have
-                                           // already checked that num_var
-                                           // matches
+                x.evaluate(point) // safe unwrap here since we have
+                                  // already checked that num_var
+                                  // matches
             })
             .collect();
 

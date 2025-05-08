@@ -2,8 +2,8 @@
 resolver = "2"
 members = [
   "arithmetic",
-  "hyperplonk",
+  # "hyperplonk",
   "subroutines",
   "transcript",
-  "util"
+  "util",
 ]

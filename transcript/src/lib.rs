@@ -94,6 +94,25 @@ impl<F: PrimeField> IOPTranscript<F> {
         Ok(challenge)
     }
 
+    pub fn get_and_append_fixed_challenge(
+        &mut self,
+        label: &'static [u8],
+        challenge: F,
+    ) -> Result<F, TranscriptError> {
+        //  we need to reject when transcript is empty
+        if self.is_empty {
+            return Err(TranscriptError::InvalidTranscript(
+                "transcript is empty".to_string(),
+            ));
+        }
+
+        let mut buf = [0u8; 64];
+        self.transcript.challenge_bytes(label, &mut buf);
+        // let challenge = F::from_le_bytes_mod_order(&buf); Left this line commented-out for your information.
+        self.append_serializable_element(label, &challenge)?;
+        Ok(challenge)
+    }
+
     // Generate a list of challenges from the current transcript
     // and append them to the transcript.
     //

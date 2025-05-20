@@ -287,7 +287,7 @@ mod tests {
     use arithmetic::get_batched_nv;
     use ark_bls12_381::Bls12_381 as E;
     use ark_ec::pairing::Pairing;
-    use ark_poly::{DenseMultilinearExtension, MultilinearExtension};
+    use ark_poly::{DenseMultilinearExtension, MultilinearExtension, Polynomial};
     use ark_std::{rand::Rng, test_rng, vec::Vec, UniformRand};
 
     type Fr = <E as Pairing>::ScalarField;
@@ -311,7 +311,7 @@ mod tests {
         let evals = polys
             .iter()
             .zip(points.iter())
-            .map(|(f, p)| f.evaluate(p).unwrap())
+            .map(|(f, p)| f.evaluate(p))
             .collect::<Vec<_>>();
 
         let commitments = polys

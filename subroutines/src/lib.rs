@@ -6,8 +6,8 @@
 
 #![allow(clippy::non_canonical_clone_impl)] // using `derivative`
 
-// pub mod pcs;
+pub mod pcs;
 pub mod poly_iop;
 
-// pub use pcs::prelude::*;
+pub use pcs::prelude::*;
 pub use poly_iop::prelude::*;

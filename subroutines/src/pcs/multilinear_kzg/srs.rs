@@ -10,8 +10,8 @@ use crate::pcs::{
     prelude::PCSError,
     StructuredReferenceString,
 };
-use ark_ec::{pairing::Pairing, scalar_mul::fixed_base::FixedBase, AffineRepr, CurveGroup};
-use ark_ff::{Field, PrimeField, Zero};
+use ark_ec::{pairing::Pairing, scalar_mul::BatchMulPreprocessing, AffineRepr, CurveGroup};
+use ark_ff::{Field, Zero};
 use ark_poly::DenseMultilinearExtension;
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize};
 use ark_std::{
@@ -142,7 +142,6 @@ impl<E: Pairing> StructuredReferenceString<E> for MultilinearUniversalParams<E> 
         let mut powers_of_g = Vec::new();
 
         let t: Vec<_> = (0..num_vars).map(|_| E::ScalarField::rand(rng)).collect();
-        let scalar_bits = E::ScalarField::MODULUS_BIT_SIZE as usize;
 
         let mut eq: LinkedList<DenseMultilinearExtension<E::ScalarField>> =
             LinkedList::from_iter(eq_extension(&t));
@@ -169,15 +168,8 @@ impl<E: Pairing> StructuredReferenceString<E> for MultilinearUniversalParams<E> 
             pp_powers.extend(pp_k_powers);
             total_scalars += 1 << (num_vars - i);
         }
-        let window_size = FixedBase::get_mul_window_size(total_scalars);
-        let g_table = FixedBase::get_window_table(scalar_bits, window_size, g);
-
-        let pp_g = E::G1::normalize_batch(&FixedBase::msm(
-            scalar_bits,
-            window_size,
-            &g_table,
-            &pp_powers,
-        ));
+        let g_batch_mul_preprocessing = BatchMulPreprocessing::<E::G1>::new(g, total_scalars);
+        let pp_g = g_batch_mul_preprocessing.batch_mul(&pp_powers);
 
         let mut start = 0;
         for i in 0..num_vars {
@@ -206,11 +198,8 @@ impl<E: Pairing> StructuredReferenceString<E> for MultilinearUniversalParams<E> 
         end_timer!(pp_generation_timer);
 
         let vp_generation_timer = start_timer!(|| "VP generation");
-        let h_mask = {
-            let window_size = FixedBase::get_mul_window_size(num_vars);
-            let h_table = FixedBase::get_window_table(scalar_bits, window_size, h);
-            E::G2::normalize_batch(&FixedBase::msm(scalar_bits, window_size, &h_table, &t))
-        };
+        let h_batch_mul_preprocessing = BatchMulPreprocessing::<E::G2>::new(h, num_vars);
+        let h_mask = h_batch_mul_preprocessing.batch_mul(&t);
         end_timer!(vp_generation_timer);
         end_timer!(total_timer);
         Ok(Self {

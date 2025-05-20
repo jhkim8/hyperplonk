@@ -17,10 +17,9 @@ use crate::{
 use arithmetic::evaluate_opt;
 use ark_ec::{
     pairing::Pairing,
-    scalar_mul::{fixed_base::FixedBase, variable_base::VariableBaseMSM},
+    scalar_mul::{variable_base::VariableBaseMSM, BatchMulPreprocessing},
     AffineRepr, CurveGroup,
 };
-use ark_ff::PrimeField;
 use ark_poly::{DenseMultilinearExtension, MultilinearExtension};
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize};
 use ark_std::{
@@ -288,18 +287,14 @@ fn verify_internal<E: Pairing>(
 
     let prepare_inputs_timer = start_timer!(|| "prepare pairing inputs");
 
-    let scalar_size = E::ScalarField::MODULUS_BIT_SIZE as usize;
-    let window_size = FixedBase::get_mul_window_size(num_var);
-
-    let h_table =
-        FixedBase::get_window_table(scalar_size, window_size, verifier_param.h.into_group());
-    let h_mul: Vec<E::G2> = FixedBase::msm(scalar_size, window_size, &h_table, point);
+    let h_batch_mul_preprocessing =
+        BatchMulPreprocessing::<E::G2>::new(verifier_param.h.into_group(), num_var);
+    let h_mul: Vec<E::G2Affine> = h_batch_mul_preprocessing.batch_mul(point);
 
     let ignored = verifier_param.num_vars - num_var;
     let h_vec: Vec<_> = (0..num_var)
-        .map(|i| verifier_param.h_mask[ignored + i].into_group() - h_mul[i])
+        .map(|i| verifier_param.h_mask[ignored + i] - h_mul[i])
         .collect();
-    let h_vec: Vec<E::G2Affine> = E::G2::normalize_batch(&h_vec);
     end_timer!(prepare_inputs_timer);
 
     let pairing_product_timer = start_timer!(|| "pairing product");

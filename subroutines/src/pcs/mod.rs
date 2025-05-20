@@ -7,7 +7,7 @@
 mod errors;
 mod multilinear_kzg;
 mod structs;
-mod univariate_kzg;
+// mod univariate_kzg;
 
 pub mod prelude;
 

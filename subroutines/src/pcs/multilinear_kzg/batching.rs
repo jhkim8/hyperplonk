@@ -22,11 +22,12 @@ use crate::{
 use arithmetic::{build_eq_x_r_vec, DenseMultilinearExtension, VPAuxInfo, VirtualPolynomial};
 use ark_ec::{pairing::Pairing, scalar_mul::variable_base::VariableBaseMSM, CurveGroup};
 
+use ark_serialize::CanonicalSerialize;
 use ark_std::{end_timer, log2, start_timer, One, Zero};
 use std::{collections::BTreeMap, iter, marker::PhantomData, ops::Deref, sync::Arc};
 use transcript::IOPTranscript;
 
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, CanonicalSerialize)]
 pub struct BatchProof<E, PCS>
 where
     E: Pairing,
